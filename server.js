@@ -51,6 +51,21 @@ app.post('/api/signin', async (req, res) => {
   }
 });
 
+app.post('/api/track-login', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required.' });
+    const user = await User.findOne({ email: String(email).toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'Account no longer exists.' });
+    user.loginCount = (user.loginCount || 0) + 1;
+    user.lastLogin = new Date();
+    await user.save();
+    res.json({ name: user.name, role: user.role });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error during tracking' });
+  }
+});
+
 app.get('/api/products', async (req, res) => {
   try {
     const products = await Product.find();

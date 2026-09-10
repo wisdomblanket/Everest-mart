@@ -37,13 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const savedUser = localStorage.getItem('em_user');
     if (savedUser) {
-        try {
-            state.user = JSON.parse(savedUser);
-            showShop();
-            showToast('Welcome back, ' + state.user.name + '!');
-        } catch (e) {
-            localStorage.removeItem('em_user');
-        }
+        restoreSession(savedUser);
     }
 
     document.getElementById('searchInput').addEventListener('keydown', e => {
@@ -182,6 +176,35 @@ function clearError() {
     const el = document.getElementById('errorMsg');
     el.textContent = '';
     el.classList.remove('show');
+}
+
+async function restoreSession(savedUser) {
+    let cached = null;
+    try {
+        cached = JSON.parse(savedUser);
+    } catch (e) {
+        localStorage.removeItem('em_user');
+        return;
+    }
+    try {
+        const res = await fetch(API + '/api/track-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: cached.email })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            state.user = { name: data.name, email: cached.email };
+            localStorage.setItem('em_user', JSON.stringify(state.user));
+        } else {
+            localStorage.removeItem('em_user');
+            return;
+        }
+    } catch (err) {
+        state.user = cached;
+    }
+    showShop();
+    showToast('Welcome back, ' + state.user.name + '!');
 }
 
 function showShop() {
