@@ -236,6 +236,18 @@ app.post('/api/admin/users/:id/reset-password', async (req, res) => {
   }
 });
 
+app.put('/api/admin/orders/:id', async (req, res) => {
+  try {
+    const { customerName } = req.body;
+    if (!customerName || !String(customerName).trim()) return res.status(400).json({ error: 'Customer name cannot be empty.' });
+    const order = await Order.findByIdAndUpdate(req.params.id, { customerName: String(customerName).trim() }, { new: true });
+    if (!order) return res.status(404).json({ error: 'Order not found.' });
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update order.' });
+  }
+});
+
 app.get('/api/admin/orders', async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });

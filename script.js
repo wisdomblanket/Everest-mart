@@ -590,10 +590,11 @@ function initCookies() {
 }
 
 /* ==================== MODALS ==================== */
-function openFaq() { document.getElementById('faqOverlay').classList.add('show'); document.body.style.overflow = 'hidden'; }
-function closeFaq(e) { if (e && e.target !== e.currentTarget) return; document.getElementById('faqOverlay').classList.remove('show'); if (!document.getElementById('cartDrawer').classList.contains('open')) document.body.style.overflow = ''; }
-function openTerms() { document.getElementById('termsOverlay').classList.add('show'); document.body.style.overflow = 'hidden'; }
-function closeTerms(e) { if (e && e.target !== e.currentTarget) return; document.getElementById('termsOverlay').classList.remove('show'); if (!document.getElementById('cartDrawer').classList.contains('open')) document.body.style.overflow = ''; }
+function cartOpen() { const d = document.getElementById('cartDrawer'); return !!(d && d.classList.contains('open')); }
+function openFaq() { const m = document.getElementById('faqOverlay'); if (!m) return; m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+function closeFaq(e) { if (e && e.target !== e.currentTarget) return; const m = document.getElementById('faqOverlay'); if (!m) return; m.classList.remove('show'); if (!cartOpen()) document.body.style.overflow = ''; }
+function openTerms() { const m = document.getElementById('termsOverlay'); if (!m) return; m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+function closeTerms(e) { if (e && e.target !== e.currentTarget) return; const m = document.getElementById('termsOverlay'); if (!m) return; m.classList.remove('show'); if (!cartOpen()) document.body.style.overflow = ''; }
 
 /* ==================== UI HELPERS ==================== */
 function goHome() { switchView('cardView'); renderProducts(); }

@@ -51,7 +51,7 @@ body{font-family:"Poppins",sans-serif;background:var(--bg);color:var(--ink);over
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-@keyframes float{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-12px) rotate(-8deg)}}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-8deg) scale(1)}50%{transform:translateY(-10px) rotate(-5deg) scale(1.04)}}
 @keyframes scaleIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes slideDown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -225,7 +225,7 @@ input[type="checkbox"]:checked+.toggle-switch::after{transform:translateX(18px)}
 .hero-content p{font-size:15px;opacity:.95;line-height:1.6}
 .hero-cta{margin-top:18px;background:var(--ink);color:#fff;padding:12px 28px;border-radius:25px;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:8px;transition:all .2s;border:none;cursor:pointer;font-family:inherit}
 .hero-cta:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(0,0,0,.2)}
-.hero-deco{font-size:100px;opacity:.15;animation:float 3s ease-in-out infinite;position:relative;z-index:1}
+.hero-deco{font-size:100px;opacity:.15;animation:float 6s ease-in-out infinite;position:relative;z-index:1;will-change:transform}
 
 /* ==================== FEATURES BAR ==================== */
 .features-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
@@ -397,14 +397,17 @@ input[type="checkbox"]:checked+.toggle-switch::after{transform:translateX(18px)}
 .terms-contact{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-weight:500}
 
 /* ==================== PRODUCT QUICK VIEW MODAL ==================== */
-.product-modal{max-width:720px}
-.product-modal .detail-grid{grid-template-columns:1fr;padding:0;gap:20px;border:none;margin-top:4px}
-.product-modal .detail-img{height:300px}
+.product-modal{max-width:960px}
+.product-modal .detail-grid{grid-template-columns:1fr;padding:0;gap:24px;border:none;margin-top:4px}
+.product-modal .detail-img{height:380px}
 .product-modal .detail-actions{grid-template-columns:1fr 1fr}
+.product-modal .detail-title{font-size:26px}
+.product-modal .detail-price{font-size:32px}
+.product-modal .detail-desc{font-size:14px}
 .product-modal .reviews-section{border:none;padding:20px 0 8px;margin-bottom:0}
 @media(min-width:640px){
     .product-modal .detail-grid{grid-template-columns:1fr 1.1fr}
-    .product-modal .detail-img{height:320px}
+    .product-modal .detail-img{height:420px}
 }
 
 /* ==================== CREDIT CARD PREVIEW ==================== */
@@ -534,6 +537,9 @@ input[type="checkbox"]:checked+.toggle-switch::after{transform:translateX(18px)}
     .auth-container{grid-template-columns:1fr;max-width:560px;margin:0 auto}
 }
 @media(max-width:768px){
+    .product-modal .detail-img{height:min(64vw,380px)}
+    .product-modal .detail-title{font-size:22px}
+    .product-modal .detail-price{font-size:26px}
     .page-stats{flex-wrap:wrap}
     .product-modal .detail-actions{grid-template-columns:1fr}
     .order-summary{position:static}

@@ -148,13 +148,44 @@ async function resetUserPassword(id, email) {
     } catch (err) { alert('Unable to connect to server.'); }
 }
 
+function editOrderCustomer(id) {
+    const cell = document.getElementById('ocust-' + id);
+    if (!cell || cell.querySelector('input')) return;
+    const current = cell.querySelector('.uname').textContent;
+    cell.innerHTML = `<input class="inline-edit" id="oedit-${id}" value="${escapeHtml(current).replace(/"/g, '&quot;')}" maxlength="80"> ` +
+        `<button class="mini-btn ok" onclick="saveOrderCustomer('${id}')" title="Save"><i class="fa-solid fa-check"></i></button> ` +
+        `<button class="mini-btn" onclick="loadOrders()" title="Cancel"><i class="fa-solid fa-xmark"></i></button>`;
+    const input = document.getElementById('oedit-' + id);
+    input.focus();
+    input.select();
+}
+
+async function saveOrderCustomer(id) {
+    const input = document.getElementById('oedit-' + id);
+    const customerName = input ? input.value.trim() : '';
+    if (!customerName) { alert('Customer name cannot be empty.'); return; }
+    try {
+        const res = await fetch(`${API}/api/admin/orders/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerName })
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            alert(data.error || 'Failed to update customer name.');
+            return;
+        }
+        loadOrders();
+    } catch (err) { alert('Unable to connect to server.'); }
+}
+
 async function loadOrders() {
     try {
         const res = await fetch(`${API}/api/admin/orders`);
         const orders = await res.json();
         document.getElementById('ordersTableBody').innerHTML = orders.length ? orders.map(o => `
             <tr>
-                <td><strong>${o.customerName}</strong></td>
+                <td><span class="uname" id="ocust-${o._id}"><strong>${escapeHtml(o.customerName)}</strong></span> <button class="mini-btn" onclick="editOrderCustomer('${o._id}')" title="Edit customer name"><i class="fa-solid fa-pen"></i></button></td>
                 <td>${o.phone}</td>
                 <td class="order-items-cell">${renderOrderItems(o.items)}</td>
                 <td><strong>Rs. ${(o.totalAmount || 0).toLocaleString()}</strong></td>
