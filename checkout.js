@@ -1,4 +1,4 @@
-const API = 'http://localhost:5000';
+const API = '';
 let checkoutItems = [];
 let checkoutTotal = 0;
 

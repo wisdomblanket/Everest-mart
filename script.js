@@ -1,5 +1,5 @@
 /* ==================== STATE ==================== */
-const API = 'http://localhost:5000';
+const API = '';
 const CATEGORIES = ['All','Electronics','Fashion','Home appliance','Beauty','Sports','Groceries','Toys'];
 const state = {
     mode: 'signup',
