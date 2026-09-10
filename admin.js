@@ -185,7 +185,7 @@ async function loadOrders() {
         const orders = await res.json();
         document.getElementById('ordersTableBody').innerHTML = orders.length ? orders.map(o => `
             <tr>
-                <td><span class="uname" id="ocust-${o._id}"><strong>${escapeHtml(o.customerName)}</strong></span> <button class="mini-btn" onclick="editOrderCustomer('${o._id}')" title="Edit customer name"><i class="fa-solid fa-pen"></i></button></td>
+                <td><strong>${escapeHtml(o.customerName)}</strong></td>
                 <td>${o.phone}</td>
                 <td class="order-items-cell">${renderOrderItems(o.items)}</td>
                 <td><strong>Rs. ${(o.totalAmount || 0).toLocaleString()}</strong></td>
