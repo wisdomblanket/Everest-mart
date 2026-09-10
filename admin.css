@@ -90,3 +90,25 @@ tr:hover td{background:var(--brand-lighter)}
 
 @media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.sidebar{width:60px}.sidebar-brand span,.nav-item span,.sidebar-footer a span{display:none}.nav-item{justify-content:center;padding:12px}.admin-main{margin-left:60px}}
 @media(max-width:640px){.stats-grid{grid-template-columns:1fr}.admin-main{padding:16px}.sidebar{display:none}}
+
+/* ==================== MOBILE REFINEMENTS (sidebar becomes top bar so nav stays reachable) ==================== */
+@media(max-width:640px){
+    .admin-dashboard{flex-direction:column}
+    .sidebar{display:flex;position:sticky;top:0;width:100%;flex-direction:row;align-items:center;overflow-x:auto;padding:0 8px;z-index:100}
+    .sidebar-brand{padding:12px 8px;border-bottom:none;font-size:16px;white-space:nowrap}
+    .sidebar-brand span{display:inline}
+    .sidebar-nav{display:flex;flex:1;padding:0;overflow-x:auto}
+    .nav-item{border-left:none;border-bottom:3px solid transparent;padding:12px 14px;white-space:nowrap}
+    .nav-item.active{border-bottom-color:var(--brand)}
+    .sidebar .nav-item span{display:inline;font-size:13px}
+    .sidebar-footer{display:flex;align-items:center;border-top:none;padding:0 4px}
+    .sidebar-footer a{padding:12px 8px;white-space:nowrap}
+    .sidebar-footer a span{display:inline}
+    .admin-main{margin-left:0;padding:16px}
+    .admin-header{flex-wrap:wrap;gap:8px}
+    .admin-header h1{font-size:20px}
+    .login-card{padding:36px 24px}
+    .panel{padding:16px}
+    .stats-grid{gap:12px}
+    .table-wrapper{-webkit-overflow-scrolling:touch}
+}

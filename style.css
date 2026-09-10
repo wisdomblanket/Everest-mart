@@ -442,3 +442,29 @@ input[type="checkbox"]:checked+.toggle-switch::after{transform:translateX(18px)}
     .page-head-row{flex-direction:column;align-items:flex-start}
     .page-head-row .page-subtitle{margin-bottom:0}
 }
+
+/* ==================== MOBILE REFINEMENTS ==================== */
+@media(max-width:768px){
+    .page-stats{flex-wrap:wrap}
+    .product-modal .detail-actions{grid-template-columns:1fr}
+    .order-summary{position:static}
+    .checkout-form-section{padding:20px}
+    .modal-overlay{padding:12px}
+}
+@media(max-width:480px){
+    .header-inner{gap:10px}
+    .logo{font-size:18px}
+    .logo-icon{width:30px;height:30px;font-size:15px;border-radius:8px}
+    .back-nav-btn{width:32px;height:32px;font-size:13px}
+    .header-actions{gap:10px}
+    .action-item .label{display:none}
+    .tagline-bar{flex-wrap:wrap;gap:4px;font-size:11px}
+    .page-header-inner{gap:10px}
+    .page-back-link{font-size:12px;padding:7px 12px}
+    .search-bar input,.form-group input,.form-group select,.input-field input{font-size:16px}
+    .toast{white-space:normal;text-align:center;max-width:92vw;border-radius:16px}
+    .card-price{flex-wrap:wrap;gap:4px 8px}
+    .form-box{padding:36px 22px 40px}
+    .hero-cta{width:100%;justify-content:center}
+    .checkout-form-section{padding:18px}
+}
