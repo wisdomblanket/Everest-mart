@@ -385,9 +385,10 @@ input[type="checkbox"]:checked+.toggle-switch::after{transform:translateX(18px)}
 /* ==================== RESPONSIVE ==================== */
 @media(max-width:768px){
     .header-inner{flex-wrap:wrap}
-    .logo{order:1}
-    .header-actions{order:2;gap:12px}
-    .search-bar{order:3;width:100%;max-width:100%}
+    .header-left{order:1;flex:1;min-width:0}
+    .header-actions{order:2;gap:12px;margin-left:auto}
+    .search-bar{order:3;flex:1 1 100%;min-width:0;max-width:100%}
+    .search-bar input{min-width:0}
     .hero-banner{flex-direction:column;text-align:center;padding:28px 20px}
     .hero-deco{display:none}
     .features-bar{grid-template-columns:repeat(2,1fr)}
@@ -461,6 +462,7 @@ input[type="checkbox"]:checked+.toggle-switch::after{transform:translateX(18px)}
     .tagline-bar{flex-wrap:wrap;gap:4px;font-size:11px}
     .page-header-inner{gap:10px}
     .page-back-link{font-size:12px;padding:7px 12px}
+    .search-bar button{padding:0 14px;font-size:12px}
     .search-bar input,.form-group input,.form-group select,.input-field input{font-size:16px}
     .toast{white-space:normal;text-align:center;max-width:92vw;border-radius:16px}
     .card-price{flex-wrap:wrap;gap:4px 8px}
