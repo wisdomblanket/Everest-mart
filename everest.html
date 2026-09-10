@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
 
@@ -18,47 +19,14 @@
     </div>
 </div>
 
-<!-- ==================== LOGIN SCREEN ==================== -->
-<div id="loginScreen" class="login-screen">
-    <div class="login-bg"></div>
-    <div class="form-box animate-in">
-        <div class="brand-logo"><i class="fa-solid fa-mountain"></i><span>Everest Mart</span></div>
-        <h1 id="authTitle">Sign Up</h1>
-        <p class="subtitle">Create an account or sign in to start shopping</p>
-        <form id="authForm">
-            <div id="nameField" class="input-group anim-slide">
-                <div class="input-field"><i class="fa-solid fa-user"></i><input type="text" id="nameInput" placeholder="Full Name"></div>
-            </div>
-            <div class="input-group">
-                <div class="input-field"><i class="fa-solid fa-envelope"></i><input type="email" id="emailInput" placeholder="Email (@gmail.com)" required></div>
-            </div>
-            <div class="input-group">
-                <div class="input-field"><i class="fa-solid fa-lock"></i><input type="password" id="passwordInput" placeholder="Password (min 8 chars)" required></div>
-            </div>
-            <div class="validation-note" id="validationNote"><i class="fa-solid fa-circle-info"></i> Email must be a valid @gmail.com address. Password must be at least 8 characters.</div>
-            <div class="remember-row">
-                <label class="toggle-label"><input type="checkbox" id="rememberMeCheckbox"><span class="toggle-switch"></span>Remember me</label>
-                <a href="#" class="terms-link" onclick="openTerms();return false">Terms &amp; Conditions</a>
-            </div>
-            <div id="errorMsg" class="error-msg"></div>
-            <div class="btn-group">
-                <button type="button" id="signupBtn" class="auth-btn active">Sign Up</button>
-                <button type="button" id="signinBtn" class="auth-btn">Sign In</button>
-            </div>
-            <button type="submit" id="submitBtn" class="submit-btn">Create Account</button>
-        </form>
-        <p class="switch-text"><span id="switchModeText">Already have an account?</span> <a href="#" id="switchModeLink">Sign In</a></p>
-    </div>
-</div>
-
 <!-- ==================== SHOP SCREEN ==================== -->
-<div id="shopScreen" class="shop-screen hidden">
+<div id="shopScreen" class="shop-screen">
     <!-- Top Strip -->
     <div class="top-strip">
         <div class="top-left"><i class="fa-solid fa-location-dot"></i> Deliver to Kathmandu, Nepal</div>
         <div class="top-links">
             <a href="#" id="faqLink"><i class="fa-solid fa-circle-question"></i> Help</a>
-            <a href="#" id="topSignIn"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>
+            <a href="login.html" id="topSignIn"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>
             <a href="admin.html" target="_blank"><i class="fa-solid fa-gauge-high"></i> Admin</a>
         </div>
     </div>

@@ -12,16 +12,102 @@ const state = {
     reviewRating: 5
 };
 
-/* ==================== INIT ==================== */
+/* ==================== INIT (page-aware: shop vs auth pages) ==================== */
 document.addEventListener('DOMContentLoaded', () => {
-    initAuth();
-    initCategories();
     initCookies();
     initScrollTop();
+    initReveal();
+
+    if (document.getElementById('loginForm')) initLoginPage();
+    else if (document.getElementById('registerForm')) initRegisterPage();
+    else if (document.getElementById('forgotForm')) initForgotPage();
+    else if (document.getElementById('resetForm')) initResetPage();
+    else if (document.getElementById('productGrid')) initShopPage();
+});
+
+function initReveal() {
+    const els = document.querySelectorAll('.animate-in');
+    if (!els.length || !('IntersectionObserver' in window)) return;
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
+    }, { threshold: 0.1 });
+    els.forEach(el => observer.observe(el));
+}
+
+function initShopPage() {
+    initCategories();
     loadProducts();
     updateCartUI();
     updateWishlistUI();
 
+    const savedUser = localStorage.getItem('em_user');
+    if (savedUser) restoreSession(savedUser);
+    else showShop();
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); renderProducts(); }
+    });
+    const faqLink = document.getElementById('faqLink');
+    if (faqLink) faqLink.addEventListener('click', e => { e.preventDefault(); openFaq(); });
+    const faqLinkFooter = document.getElementById('faqLinkFooter');
+    if (faqLinkFooter) faqLinkFooter.addEventListener('click', e => { e.preventDefault(); openFaq(); });
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink) logoutLink.addEventListener('click', e => { e.preventDefault(); logout(); });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeFaq(); closeTerms(); closeProductModal(); }
+    });
+}
+
+/* ==================== AUTH (separate login / register / forgot pages) ==================== */
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (btn) btn.innerHTML = '<i class="fa-regular fa-eye' + (show ? '-slash' : '') + '"></i>';
+    input.focus();
+}
+
+function setLoading(btn, loading) {
+    if (!btn) return;
+    btn.disabled = loading;
+    const text = btn.querySelector('.btn-text');
+    const loader = btn.querySelector('.btn-loader');
+    if (text) text.classList.toggle('hidden', loading);
+    if (loader) loader.classList.toggle('hidden', !loading);
+}
+
+function isValidGmail(email) {
+    return /^[a-z0-9](?:[a-z0-9._%+-]*[a-z0-9])?@gmail\.com$/i.test(email);
+}
+
+function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    if (!el) { showToast(msg); return; }
+    el.textContent = msg;
+    el.classList.add('show');
+    const box = el.closest('.auth-card') || el.closest('.form-box');
+    if (box) { box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); }
+}
+
+function clearError() {
+    const el = document.getElementById('errorMsg');
+    if (!el) return;
+    el.textContent = '';
+    el.classList.remove('show');
+}
+
+function showSuccess(msg) {
+    const el = document.getElementById('successMsg');
+    if (!el) { showToast(msg); return; }
+    el.textContent = msg;
+    el.classList.add('show');
+}
+
+/* ---------- LOGIN PAGE ---------- */
+function initLoginPage() {
+    if (localStorage.getItem('em_user')) { window.location.href = 'everest.html'; return; }
     const remembered = localStorage.getItem('em_remember');
     if (remembered) {
         try {
@@ -29,153 +115,177 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('emailInput').value = creds.email || '';
             document.getElementById('passwordInput').value = creds.password || '';
             document.getElementById('rememberMeCheckbox').checked = true;
-        } catch (e) {
-            document.getElementById('emailInput').value = remembered;
-            document.getElementById('rememberMeCheckbox').checked = true;
-        }
+        } catch (e) { localStorage.removeItem('em_remember'); }
     }
-
-    const savedUser = localStorage.getItem('em_user');
-    if (savedUser) {
-        restoreSession(savedUser);
-    }
-
-    document.getElementById('searchInput').addEventListener('keydown', e => {
-        if (e.key === 'Enter') { e.preventDefault(); renderProducts(); }
-    });
-    document.getElementById('faqLink').addEventListener('click', e => { e.preventDefault(); openFaq(); });
-    document.getElementById('faqLinkFooter').addEventListener('click', e => { e.preventDefault(); openFaq(); });
-    document.getElementById('topSignIn').addEventListener('click', e => {
-        e.preventDefault();
-        document.getElementById('shopScreen').classList.add('hidden');
-        document.getElementById('loginScreen').classList.remove('hidden');
-    });
-    document.getElementById('logoutLink').addEventListener('click', e => { e.preventDefault(); logout(); });
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') { closeFaq(); closeTerms(); closeProductModal(); }
-    });
-
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
-});
-
-/* ==================== AUTH ==================== */
-function initAuth() {
-    document.getElementById('signupBtn').addEventListener('click', () => switchAuthMode('signup'));
-    document.getElementById('signinBtn').addEventListener('click', () => switchAuthMode('signin'));
-    document.getElementById('switchModeLink').addEventListener('click', e => {
-        e.preventDefault();
-        switchAuthMode(state.mode === 'signup' ? 'signin' : 'signup');
-    });
-    document.getElementById('authForm').addEventListener('submit', e => { e.preventDefault(); handleAuth(); });
+    document.getElementById('loginForm').addEventListener('submit', e => { e.preventDefault(); handleLogin(); });
 }
 
-function switchAuthMode(mode) {
-    state.mode = mode;
-    const signupBtn = document.getElementById('signupBtn');
-    const signinBtn = document.getElementById('signinBtn');
-    const nameField = document.getElementById('nameField');
-    const title = document.getElementById('authTitle');
-    const submitBtn = document.getElementById('submitBtn');
-    const switchText = document.getElementById('switchModeText');
-    const switchLink = document.getElementById('switchModeLink');
-    const note = document.getElementById('validationNote');
-
-    if (mode === 'signup') {
-        signupBtn.classList.add('active');
-        signinBtn.classList.remove('active');
-        nameField.style.maxHeight = '60px';
-        nameField.style.opacity = '1';
-        nameField.style.marginBottom = '0';
-        title.textContent = 'Sign Up';
-        submitBtn.textContent = 'Create Account';
-        switchText.textContent = 'Already have an account?';
-        switchLink.textContent = 'Sign In';
-        note.style.display = '';
-    } else {
-        signinBtn.classList.add('active');
-        signupBtn.classList.remove('active');
-        nameField.style.maxHeight = '0';
-        nameField.style.opacity = '0';
-        nameField.style.marginBottom = '0';
-        title.textContent = 'Sign In';
-        submitBtn.textContent = 'Sign In';
-        switchText.textContent = "Don't have an account?";
-        switchLink.textContent = 'Sign Up';
-        note.style.display = 'none';
-    }
-    clearError();
-}
-
-async function handleAuth() {
-    const name = document.getElementById('nameInput').value.trim();
+async function handleLogin() {
     const email = document.getElementById('emailInput').value.trim().toLowerCase();
     const password = document.getElementById('passwordInput').value;
     const remember = document.getElementById('rememberMeCheckbox').checked;
+    clearError();
 
-    if (!email || !/^[a-z0-9](?:[a-z0-9._%+-]*[a-z0-9])?@gmail\.com$/i.test(email)) {
-        return showError('Please enter a valid @gmail.com email address.');
-    }
-    if (!password || password.length < 8) {
-        return showError('Password must be at least 8 characters long.');
-    }
-    if (state.mode === 'signup' && !name) {
-        return showError('Please enter your full name.');
-    }
-
-    const endpoint = state.mode === 'signup' ? '/api/signup' : '/api/signin';
-    const payload = state.mode === 'signup' ? { name, email, password } : { email, password };
+    if (!isValidGmail(email)) return showError('Please enter a valid @gmail.com email address.');
+    if (!password || password.length < 8) return showError('Password must be at least 8 characters long.');
 
     const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Please wait...';
-
+    setLoading(submitBtn, true);
     try {
-        const res = await fetch(`${API}${endpoint}`, {
+        const res = await fetch(API + '/api/signin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ email, password })
         });
         const data = await res.json();
+        if (!res.ok) { showError(data.error || 'Sign in failed.'); return; }
 
-        if (!res.ok) {
-            showError(data.error || 'Authentication failed.');
-            return;
-        }
-
-        if (remember) {
-            localStorage.setItem('em_remember', JSON.stringify({ email: email, password: password }));
-        } else {
-            localStorage.removeItem('em_remember');
-        }
+        if (remember) localStorage.setItem('em_remember', JSON.stringify({ email, password }));
+        else localStorage.removeItem('em_remember');
 
         state.user = { name: data.name, email };
-        localStorage.setItem('em_user', JSON.stringify({ name: data.name, email }));
-        clearError();
-        showShop();
-        showToast(`Welcome, ${data.name}!`);
+        localStorage.setItem('em_user', JSON.stringify(state.user));
+        sessionStorage.setItem('em_fresh', '1');
+        window.location.href = 'everest.html';
     } catch (err) {
-        showError('Unable to connect to server. Make sure it is running on port 5000.');
+        showError('Unable to connect to server. Please check your connection and try again.');
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = state.mode === 'signup' ? 'Create Account' : 'Sign In';
+        setLoading(submitBtn, false);
     }
 }
 
-function showError(msg) {
-    const el = document.getElementById('errorMsg');
-    el.textContent = msg;
-    el.classList.add('show');
-    const formBox = el.closest('.form-box');
-    if (formBox) { formBox.classList.remove('shake'); void formBox.offsetWidth; formBox.classList.add('shake'); }
+/* ---------- REGISTER PAGE ---------- */
+function initRegisterPage() {
+    if (localStorage.getItem('em_user')) { window.location.href = 'everest.html'; return; }
+    const pwInput = document.getElementById('passwordInput');
+    if (pwInput) pwInput.addEventListener('input', () => updateStrengthMeter(pwInput.value));
+    document.getElementById('registerForm').addEventListener('submit', e => { e.preventDefault(); handleRegister(); });
 }
 
-function clearError() {
-    const el = document.getElementById('errorMsg');
-    el.textContent = '';
-    el.classList.remove('show');
+function updateStrengthMeter(pw) {
+    const fill = document.getElementById('strengthBar');
+    const text = document.getElementById('strengthText');
+    if (!fill || !text) return;
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if (/\d/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    const levels = [
+        { cls: '', label: 'Password strength' },
+        { cls: 'weak', label: 'Weak' },
+        { cls: 'weak', label: 'Weak' },
+        { cls: 'fair', label: 'Fair' },
+        { cls: 'good', label: 'Good' },
+        { cls: 'strong', label: 'Strong' }
+    ];
+    const level = levels[Math.min(score, 5)];
+    fill.className = 'strength-fill ' + level.cls;
+    text.textContent = pw ? level.label : 'Password strength';
+}
+
+async function handleRegister() {
+    const name = document.getElementById('nameInput').value.trim();
+    const email = document.getElementById('emailInput').value.trim().toLowerCase();
+    const password = document.getElementById('passwordInput').value;
+    const confirm = document.getElementById('confirmPasswordInput').value;
+    const terms = document.getElementById('termsCheckbox').checked;
+    clearError();
+
+    if (!name) return showError('Please enter your full name.');
+    if (!isValidGmail(email)) return showError('Please enter a valid @gmail.com email address.');
+    if (!password || password.length < 8) return showError('Password must be at least 8 characters long.');
+    if (password !== confirm) return showError('Passwords do not match.');
+    if (!terms) return showError('Please accept the Terms & Conditions to continue.');
+
+    const submitBtn = document.getElementById('submitBtn');
+    setLoading(submitBtn, true);
+    try {
+        const res = await fetch(API + '/api/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { showError(data.error || 'Registration failed.'); return; }
+
+        state.user = { name: data.name, email };
+        localStorage.setItem('em_user', JSON.stringify(state.user));
+        sessionStorage.setItem('em_fresh', '1');
+        window.location.href = 'everest.html';
+    } catch (err) {
+        showError('Unable to connect to server. Please check your connection and try again.');
+    } finally {
+        setLoading(submitBtn, false);
+    }
+}
+
+/* ---------- FORGOT PASSWORD PAGE ---------- */
+function initForgotPage() {
+    document.getElementById('forgotForm').addEventListener('submit', e => { e.preventDefault(); handleForgot(); });
+}
+
+async function handleForgot() {
+    const email = document.getElementById('emailInput').value.trim().toLowerCase();
+    clearError();
+    if (!isValidGmail(email)) return showError('Please enter a valid @gmail.com email address.');
+
+    const submitBtn = document.getElementById('submitBtn');
+    setLoading(submitBtn, true);
+    try {
+        const res = await fetch(API + '/api/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) { showError(data.error || 'Request failed. Please try again.'); return; }
+        showSuccess(data.message || 'If an account exists for that email, a reset link has been sent.');
+        document.getElementById('forgotForm').reset();
+    } catch (err) {
+        showError('Unable to connect to server. Please check your connection and try again.');
+    } finally {
+        setLoading(submitBtn, false);
+    }
+}
+
+/* ---------- RESET PASSWORD PAGE ---------- */
+function initResetPage() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (!token) {
+        showError('This reset link is invalid. Please request a new one.');
+        document.getElementById('submitBtn').disabled = true;
+        return;
+    }
+    document.getElementById('resetForm').addEventListener('submit', e => { e.preventDefault(); handleReset(token); });
+}
+
+async function handleReset(token) {
+    const password = document.getElementById('passwordInput').value;
+    const confirm = document.getElementById('confirmPasswordInput').value;
+    clearError();
+    if (!password || password.length < 8) return showError('Password must be at least 8 characters long.');
+    if (password !== confirm) return showError('Passwords do not match.');
+
+    const submitBtn = document.getElementById('submitBtn');
+    setLoading(submitBtn, true);
+    try {
+        const res = await fetch(API + '/api/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { showError(data.error || 'Reset failed. Please try again.'); return; }
+        showSuccess(data.message + ' Redirecting to sign in...');
+        setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+    } catch (err) {
+        showError('Unable to connect to server. Please check your connection and try again.');
+    } finally {
+        setLoading(submitBtn, false);
+    }
 }
 
 async function restoreSession(savedUser) {
@@ -184,6 +294,14 @@ async function restoreSession(savedUser) {
         cached = JSON.parse(savedUser);
     } catch (e) {
         localStorage.removeItem('em_user');
+        showShop();
+        return;
+    }
+    if (sessionStorage.getItem('em_fresh')) {
+        sessionStorage.removeItem('em_fresh');
+        state.user = cached;
+        showShop();
+        showToast('Welcome, ' + state.user.name + '!');
         return;
     }
     try {
@@ -198,6 +316,7 @@ async function restoreSession(savedUser) {
             localStorage.setItem('em_user', JSON.stringify(state.user));
         } else {
             localStorage.removeItem('em_user');
+            showShop();
             return;
         }
     } catch (err) {
@@ -208,31 +327,34 @@ async function restoreSession(savedUser) {
 }
 
 function showShop() {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('shopScreen').classList.remove('hidden');
+    const greeting = document.getElementById('greeting');
+    const greetingShort = document.getElementById('greetingShort');
+    const logoutLink = document.getElementById('logoutLink');
+    const topSignIn = document.getElementById('topSignIn');
     if (state.user) {
-        document.getElementById('greeting').innerHTML = '<i class="fa-solid fa-user" style="margin-right:6px"></i>Hi, <strong>' + state.user.name + '</strong> — welcome to Everest Mart!';
-        document.getElementById('greetingShort').textContent = state.user.name.split(' ')[0];
-        document.getElementById('logoutLink').classList.remove('hidden');
-        document.getElementById('topSignIn').style.display = 'none';
+        if (greeting) greeting.innerHTML = '<i class="fa-solid fa-user" style="margin-right:6px"></i>Hi, <strong>' + state.user.name + '</strong> — welcome to Everest Mart!';
+        if (greetingShort) greetingShort.textContent = state.user.name.split(' ')[0];
+        if (logoutLink) logoutLink.classList.remove('hidden');
+        if (topSignIn) topSignIn.style.display = 'none';
     } else {
-        document.getElementById('greeting').textContent = 'Free delivery on orders over Rs. 2000 • Easy returns within 7 days';
-        document.getElementById('logoutLink').classList.add('hidden');
-        document.getElementById('topSignIn').style.display = '';
+        if (greeting) greeting.textContent = 'Free delivery on orders over Rs. 2000 • Easy returns within 7 days';
+        if (logoutLink) logoutLink.classList.add('hidden');
+        if (topSignIn) topSignIn.style.display = '';
     }
 }
 
 function logout() {
     state.user = null;
     localStorage.removeItem('em_user');
-    document.getElementById('shopScreen').classList.add('hidden');
-    document.getElementById('loginScreen').classList.remove('hidden');
-    document.getElementById('authForm').reset();
+    localStorage.removeItem('em_remember');
     showToast('Logged out successfully');
+    setTimeout(() => { window.location.href = 'login.html'; }, 600);
 }
 
 /* ==================== PRODUCTS ==================== */
 async function loadProducts() {
+    const grid = document.getElementById('productGrid');
+    if (grid) grid.innerHTML = Array(8).fill('<div class="skeleton-card"><div class="skeleton-img shimmer"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-btn"></div></div>').join('');
     try {
         const res = await fetch(`${API}/api/products`);
         state.products = await res.json();
@@ -258,7 +380,7 @@ function renderProducts(list) {
         const isWished = state.wishlist.includes(p.id);
         return '<div class="product-card animate-in" style="animation-delay:' + (i * 0.04) + 's">' +
             '<div class="card-img" onclick="openDetail(' + p.id + ')">' +
-                '<img src="' + p.image + '" alt="' + p.title + '" loading="lazy">' +
+                '<img src="' + p.image + '" alt="' + p.title + '" loading="lazy" onload="this.classList.add(\'loaded\')" onerror="this.classList.add(\'loaded\')">' +
                 '<span class="discount-tag">-' + discount + '%</span>' +
                 '<button class="wish-btn' + (isWished ? ' active' : '') + '" data-id="' + p.id + '" onclick="event.stopPropagation();toggleWishlist(' + p.id + ')"><i class="fa-' + (isWished ? 'solid' : 'regular') + ' fa-heart"></i></button>' +
             '</div>' +
@@ -448,18 +570,22 @@ function buyNow(id) {
 
 /* ==================== COOKIES ==================== */
 function initCookies() {
+    const banner = document.getElementById('cookieBanner');
+    if (!banner) return;
     if (localStorage.getItem('em_cookies')) {
-        document.getElementById('cookieBanner').classList.add('hidden');
+        banner.classList.add('hidden');
         return;
     }
-    document.getElementById('acceptCookies').addEventListener('click', () => {
+    const acceptBtn = document.getElementById('acceptCookies');
+    const declineBtn = document.getElementById('declineCookies');
+    if (acceptBtn) acceptBtn.addEventListener('click', () => {
         localStorage.setItem('em_cookies', 'accepted');
-        document.getElementById('cookieBanner').classList.add('hidden');
+        banner.classList.add('hidden');
         showToast('Cookies accepted. Thank you!');
     });
-    document.getElementById('declineCookies').addEventListener('click', () => {
+    if (declineBtn) declineBtn.addEventListener('click', () => {
         localStorage.setItem('em_cookies', 'declined');
-        document.getElementById('cookieBanner').classList.add('hidden');
+        banner.classList.add('hidden');
     });
 }
 
@@ -504,6 +630,7 @@ function toggleWishlistView() {
 
 function showToast(msg) {
     const toast = document.getElementById('toast');
+    if (!toast) return;
     toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + msg;
     toast.classList.add('show');
     clearTimeout(toast._timer);
@@ -511,7 +638,9 @@ function showToast(msg) {
 }
 
 function initScrollTop() {
+    const btn = document.getElementById('scrollTopBtn');
+    if (!btn) return;
     window.addEventListener('scroll', () => {
-        document.getElementById('scrollTopBtn').classList.toggle('visible', window.scrollY > 400);
-    });
+        btn.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
 }

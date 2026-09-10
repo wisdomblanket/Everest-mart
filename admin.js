@@ -74,20 +74,78 @@ async function loadStats() {
     } catch (err) { console.error('Stats error:', err); }
 }
 
+function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 async function loadUsers() {
     try {
         const res = await fetch(`${API}/api/admin/users`);
         const users = await res.json();
         document.getElementById('usersTableBody').innerHTML = users.length ? users.map(u => `
             <tr>
-                <td><strong>${u.name}</strong></td>
-                <td>${u.email}</td>
+                <td><span class="uname" id="uname-${u._id}"><strong>${escapeHtml(u.name)}</strong></span></td>
+                <td>${escapeHtml(u.email)}</td>
                 <td><span class="badge ${u.role === 'admin' ? 'admin' : 'user'}">${u.role}</span></td>
                 <td>${u.loginCount || 0}</td>
                 <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never'}</td>
                 <td>${new Date(u.createdAt).toLocaleDateString()}</td>
-            </tr>`).join('') : '<tr><td colspan="6" class="empty">No users registered yet</td></tr>';
+                <td class="row-actions">
+                    <button class="mini-btn" onclick="editUserName('${u._id}')" title="Edit name"><i class="fa-solid fa-pen"></i></button>
+                    <button class="mini-btn warn" onclick="resetUserPassword('${u._id}', '${escapeHtml(u.email)}')" title="Set new password"><i class="fa-solid fa-key"></i></button>
+                </td>
+            </tr>`).join('') : '<tr><td colspan="7" class="empty">No users registered yet</td></tr>';
     } catch (err) { console.error('Users error:', err); }
+}
+
+function editUserName(id) {
+    const cell = document.getElementById('uname-' + id);
+    if (!cell || cell.querySelector('input')) return;
+    const current = cell.textContent;
+    cell.innerHTML = `<input class="inline-edit" id="uedit-${id}" value="${escapeHtml(current).replace(/"/g, '&quot;')}" maxlength="60"> ` +
+        `<button class="mini-btn ok" onclick="saveUserName('${id}')" title="Save"><i class="fa-solid fa-check"></i></button> ` +
+        `<button class="mini-btn" onclick="loadUsers()" title="Cancel"><i class="fa-solid fa-xmark"></i></button>`;
+    const input = document.getElementById('uedit-' + id);
+    input.focus();
+    input.select();
+}
+
+async function saveUserName(id) {
+    const input = document.getElementById('uedit-' + id);
+    const name = input ? input.value.trim() : '';
+    if (!name) { alert('Name cannot be empty.'); return; }
+    try {
+        const res = await fetch(`${API}/api/admin/users/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            alert(data.error || 'Failed to update name.');
+            return;
+        }
+        loadUsers();
+    } catch (err) { alert('Unable to connect to server.'); }
+}
+
+async function resetUserPassword(id, email) {
+    const pw = prompt(`Set a new password for ${email} (min 8 characters):`);
+    if (pw === null) return;
+    if (pw.length < 8) { alert('Password must be at least 8 characters.'); return; }
+    try {
+        const res = await fetch(`${API}/api/admin/users/${id}/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pw })
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            alert(data.error || 'Failed to reset password.');
+            return;
+        }
+        alert('Password updated successfully.');
+    } catch (err) { alert('Unable to connect to server.'); }
 }
 
 async function loadOrders() {
