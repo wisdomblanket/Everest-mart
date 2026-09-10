@@ -478,7 +478,6 @@ input[type="checkbox"]:checked+.toggle-switch::after{transform:translateX(18px)}
     .search-bar{order:3;flex:1 1 100%;min-width:0;max-width:100%}
     .search-bar input{min-width:0}
     .hero-banner{flex-direction:column;text-align:center;padding:28px 20px}
-    .hero-deco{display:none}
     .features-bar{grid-template-columns:repeat(2,1fr)}
     .product-grid{grid-template-columns:repeat(2,1fr);gap:10px}
     .detail-grid,.checkout-grid{grid-template-columns:1fr!important;gap:18px;padding:18px}
