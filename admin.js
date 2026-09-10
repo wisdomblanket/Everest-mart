@@ -1,0 +1,132 @@
+const API = 'http://localhost:5000';
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin);
+    document.getElementById('adminLogout').addEventListener('click', e => {
+        e.preventDefault();
+        document.getElementById('adminDashboard').classList.add('hidden');
+        document.getElementById('adminLogin').classList.remove('hidden');
+        document.getElementById('adminLoginForm').reset();
+    });
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', e => {
+            e.preventDefault();
+            showSection(item.dataset.section, item);
+        });
+    });
+});
+
+async function handleAdminLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPassword').value;
+    const errEl = document.getElementById('adminError');
+    errEl.textContent = '';
+
+    try {
+        const res = await fetch(`${API}/api/signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.error || 'Login failed'; return; }
+        if (data.role !== 'admin') { errEl.textContent = 'Not an admin account. Only admin users can access this panel.'; return; }
+        document.getElementById('adminLogin').classList.add('hidden');
+        document.getElementById('adminDashboard').classList.remove('hidden');
+        document.getElementById('adminGreeting').textContent = `Welcome, ${data.name}`;
+        loadAdminData();
+    } catch (err) {
+        errEl.textContent = 'Unable to connect to server. Is it running on port 5000?';
+    }
+}
+
+async function loadAdminData() {
+    await Promise.all([loadStats(), loadUsers(), loadOrders()]);
+}
+
+async function loadStats() {
+    try {
+        const res = await fetch(`${API}/api/admin/stats`);
+        const data = await res.json();
+        document.getElementById('totalUsers').textContent = data.totalUsers;
+        document.getElementById('totalOrders').textContent = data.totalOrders;
+        document.getElementById('totalRevenue').textContent = `Rs. ${data.totalRevenue.toLocaleString()}`;
+        if (data.popularProducts.length > 0) {
+            document.getElementById('topProduct').textContent = data.popularProducts[0][0].length > 28 ? data.popularProducts[0][0].substring(0, 28) + '...' : data.popularProducts[0][0];
+            document.getElementById('popularProductsList').innerHTML = data.popularProducts.map(([name, qty], i) => `
+                <div class="popular-item">
+                    <span class="rank">#${i + 1}</span>
+                    <span class="name">${name}</span>
+                    <span class="qty">${qty} sold</span>
+                    <div class="bar" style="width:${(qty / data.popularProducts[0][1]) * 100}%"></div>
+                </div>`).join('');
+            document.getElementById('productPerformance').innerHTML = data.popularProducts.map(([name, qty], i) => `
+                <div class="performance-item">
+                    <div class="perf-rank">${i + 1}</div>
+                    <div class="perf-info"><h4>${name}</h4><p>${qty} units sold</p></div>
+                    <div class="perf-bar-container"><div class="perf-bar" style="width:${(qty / data.popularProducts[0][1]) * 100}%"></div></div>
+                </div>`).join('');
+        } else {
+            document.getElementById('popularProductsList').innerHTML = '<p style="color:var(--muted);font-size:13px;padding:16px 0">No orders placed yet. Popular products will appear here once customers start ordering.</p>';
+            document.getElementById('productPerformance').innerHTML = '<p style="color:var(--muted);font-size:13px;padding:16px 0">No product data available yet.</p>';
+        }
+    } catch (err) { console.error('Stats error:', err); }
+}
+
+async function loadUsers() {
+    try {
+        const res = await fetch(`${API}/api/admin/users`);
+        const users = await res.json();
+        document.getElementById('usersTableBody').innerHTML = users.length ? users.map(u => `
+            <tr>
+                <td><strong>${u.name}</strong></td>
+                <td>${u.email}</td>
+                <td><span class="badge ${u.role === 'admin' ? 'admin' : 'user'}">${u.role}</span></td>
+                <td>${u.loginCount || 0}</td>
+                <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never'}</td>
+                <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+            </tr>`).join('') : '<tr><td colspan="6" class="empty">No users registered yet</td></tr>';
+    } catch (err) { console.error('Users error:', err); }
+}
+
+async function loadOrders() {
+    try {
+        const res = await fetch(`${API}/api/admin/orders`);
+        const orders = await res.json();
+        document.getElementById('ordersTableBody').innerHTML = orders.length ? orders.map(o => `
+            <tr>
+                <td><strong>${o.customerName}</strong></td>
+                <td>${o.phone}</td>
+                <td class="order-items-cell">${renderOrderItems(o.items)}</td>
+                <td><strong>Rs. ${(o.totalAmount || 0).toLocaleString()}</strong></td>
+                <td><span class="badge payment">${o.paymentMethod}</span></td>
+                <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'N/A'}</td>
+            </tr>`).join('') : '<tr><td colspan="6" class="empty">No orders placed yet</td></tr>';
+    } catch (err) { console.error('Orders error:', err); }
+}
+
+function renderOrderItems(items) {
+    const list = items || [];
+    if (!list.length) return '<span style="color:var(--muted);font-size:12px">No items</span>';
+    const totalQty = list.reduce((s, i) => s + (i.qty || 1), 0);
+    return '<div class="order-items-head">' + totalQty + ' item' + (totalQty === 1 ? '' : 's') + '</div>' +
+        list.map(i => {
+            const unit = i.price || 0;
+            const qty = i.qty || 1;
+            return '<div class="order-item-row">' +
+                '<span class="oi-name">' + i.title + '<span class="oi-unit">@ Rs. ' + unit.toLocaleString() + ' each</span></span>' +
+                '<span class="oi-qty">x ' + qty + '</span>' +
+                '<span class="oi-price">Rs. ' + (unit * qty).toLocaleString() + '</span>' +
+            '</div>';
+        }).join('');
+}
+
+function showSection(section, navItem) {
+    document.querySelectorAll('.section-content').forEach(s => s.classList.add('hidden'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`${section}Section`).classList.remove('hidden');
+    navItem.classList.add('active');
+    const titles = { overview: 'Dashboard Overview', users: 'User Management', orders: 'Order Management', products: 'Product Performance' };
+    document.getElementById('sectionTitle').textContent = titles[section] || 'Dashboard';
+}

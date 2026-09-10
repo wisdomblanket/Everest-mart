@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Everest Mart - Your Trusted Online Shopping Destination</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ==================== COOKIE CONSENT ==================== -->
+<div id="cookieBanner" class="cookie-banner">
+    <div class="cookie-inner">
+        <div class="cookie-text"><i class="fa-solid fa-cookie-bite"></i><p>We use cookies to enhance your shopping experience. By continuing to use Everest Mart, you agree to our use of cookies. <a href="#" onclick="openTerms();return false">Learn more</a></p></div>
+        <div class="cookie-actions"><button id="acceptCookies" class="cookie-btn accept">Accept</button><button id="declineCookies" class="cookie-btn decline">Decline</button></div>
+    </div>
+</div>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div id="loginScreen" class="login-screen">
+    <div class="login-bg"></div>
+    <div class="form-box animate-in">
+        <div class="brand-logo"><i class="fa-solid fa-mountain"></i><span>Everest Mart</span></div>
+        <h1 id="authTitle">Sign Up</h1>
+        <p class="subtitle">Create an account or sign in to start shopping</p>
+        <form id="authForm">
+            <div id="nameField" class="input-group anim-slide">
+                <div class="input-field"><i class="fa-solid fa-user"></i><input type="text" id="nameInput" placeholder="Full Name"></div>
+            </div>
+            <div class="input-group">
+                <div class="input-field"><i class="fa-solid fa-envelope"></i><input type="email" id="emailInput" placeholder="Email (@gmail.com)" required></div>
+            </div>
+            <div class="input-group">
+                <div class="input-field"><i class="fa-solid fa-lock"></i><input type="password" id="passwordInput" placeholder="Password (min 8 chars)" required></div>
+            </div>
+            <div class="validation-note" id="validationNote"><i class="fa-solid fa-circle-info"></i> Email must be a valid @gmail.com address. Password must be at least 8 characters.</div>
+            <div class="remember-row">
+                <label class="toggle-label"><input type="checkbox" id="rememberMeCheckbox"><span class="toggle-switch"></span>Remember me</label>
+                <a href="#" class="terms-link" onclick="openTerms();return false">Terms &amp; Conditions</a>
+            </div>
+            <div id="errorMsg" class="error-msg"></div>
+            <div class="btn-group">
+                <button type="button" id="signupBtn" class="auth-btn active">Sign Up</button>
+                <button type="button" id="signinBtn" class="auth-btn">Sign In</button>
+            </div>
+            <button type="submit" id="submitBtn" class="submit-btn">Create Account</button>
+        </form>
+        <p class="switch-text"><span id="switchModeText">Already have an account?</span> <a href="#" id="switchModeLink">Sign In</a></p>
+    </div>
+</div>
+
+<!-- ==================== SHOP SCREEN ==================== -->
+<div id="shopScreen" class="shop-screen hidden">
+    <!-- Top Strip -->
+    <div class="top-strip">
+        <div class="top-left"><i class="fa-solid fa-location-dot"></i> Deliver to Kathmandu, Nepal</div>
+        <div class="top-links">
+            <a href="#" id="faqLink"><i class="fa-solid fa-circle-question"></i> Help</a>
+            <a href="#" id="topSignIn"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>
+            <a href="admin.html" target="_blank"><i class="fa-solid fa-gauge-high"></i> Admin</a>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="header-inner">
+            <div class="header-left">
+                <button class="back-nav-btn" onclick="history.back()" title="Go back"><i class="fa-solid fa-arrow-left"></i></button>
+                <div class="logo" onclick="goHome()"><div class="logo-icon"><i class="fa-solid fa-mountain"></i></div><span>Everest<span class="logo-accent">Mart</span></span></div>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search products, brands and more...">
+                <button onclick="renderProducts()"><i class="fa-solid fa-search"></i> Search</button>
+            </div>
+            <div class="header-actions">
+                <div class="action-item" onclick="toggleWishlistView()"><i class="fa-regular fa-heart icon"></i><span id="wishlistCount" class="badge">0</span><span class="label">Wishlist</span></div>
+                <div class="action-item" onclick="toggleCartDrawer()"><i class="fa-solid fa-cart-shopping icon"></i><span id="cartCount" class="badge">0</span><span class="label">Cart</span></div>
+                <div class="action-item"><i class="fa-solid fa-user icon"></i><span class="label" id="greetingShort">Account</span></div>
+            </div>
+        </div>
+        <div class="tagline-bar">
+            <span id="greeting">Free delivery on orders over Rs. 2000 &bull; Easy returns within 7 days</span>
+            <a href="#" id="logoutLink" class="logout-link hidden"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </header>
+
+    <!-- Category Nav -->
+    <nav class="cat-nav"><div class="cat-nav-inner" id="catRow"></div></nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Card View -->
+        <div id="cardView" class="view-section active">
+            <div class="hero-banner animate-in">
+                <div class="hero-content">
+                    <span class="hero-badge"><i class="fa-solid fa-bolt"></i> Limited Offer</span>
+                    <h1>September Mega Sale!</h1>
+                    <p>Get up to 70% off on top electronics, fashion, home appliances, and daily essentials with fast delivery across Nepal.</p>
+                    <button class="hero-cta" onclick="scrollToProducts()"><i class="fa-solid fa-bag-shopping"></i> Shop Now</button>
+                </div>
+                <div class="hero-deco"><i class="fa-solid fa-bag-shopping"></i></div>
+            </div>
+            <div class="features-bar">
+                <div class="feature-card"><div class="feature-icon"><i class="fa-solid fa-truck-fast"></i></div><div><h4>Free Shipping</h4><p>On orders over Rs. 2000</p></div></div>
+                <div class="feature-card"><div class="feature-icon"><i class="fa-solid fa-rotate-left"></i></div><div><h4>Easy Returns</h4><p>7-day return policy</p></div></div>
+                <div class="feature-card"><div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div><div><h4>Secure Payment</h4><p>100% protected checkout</p></div></div>
+                <div class="feature-card"><div class="feature-icon"><i class="fa-solid fa-headset"></i></div><div><h4>24/7 Support</h4><p>Dedicated assistance</p></div></div>
+            </div>
+            <div class="section-head"><h2><i class="fa-solid fa-fire"></i> Flash Deals &amp; Products</h2><span class="product-count" id="productCount"></span></div>
+            <div id="productGrid" class="product-grid"></div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="logo"><div class="logo-icon"><i class="fa-solid fa-mountain"></i></div><span>Everest<span class="logo-accent">Mart</span></span></div>
+                <p>Your trusted online shopping destination for electronics, fashion, and home appliances in Kathmandu and across Nepal.</p>
+                <div class="social-links"><a href="#"><i class="fa-brands fa-facebook-f"></i></a><a href="#"><i class="fa-brands fa-instagram"></i></a><a href="#"><i class="fa-brands fa-twitter"></i></a><a href="#"><i class="fa-brands fa-youtube"></i></a></div>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#" onclick="openTerms();return false">Terms &amp; Conditions</a></li>
+                    <li><a href="#" onclick="openTerms();return false">Privacy Policy</a></li>
+                    <li><a href="admin.html" target="_blank">Admin Panel</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Customer Care</h4>
+                <ul>
+                    <li><a href="#">Track Order</a></li>
+                    <li><a href="#">Returns &amp; Exchanges</a></li>
+                    <li><a href="#" id="faqLinkFooter">FAQ &amp; Help Center</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact Us</h4>
+                <ul>
+                    <li><i class="fa-solid fa-location-dot"></i> Kathmandu, Nepal</li>
+                    <li><i class="fa-solid fa-envelope"></i> support@everestmart.com</li>
+                    <li><i class="fa-solid fa-phone"></i> +977-1-456789</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Everest Mart. All rights reserved.</p>
+            <div class="payment-icons"><i class="fa-brands fa-cc-visa"></i><i class="fa-brands fa-cc-mastercard"></i><i class="fa-brands fa-cc-amex"></i><i class="fa-brands fa-cc-paypal"></i></div>
+        </div>
+    </footer>
+</div>
+
+<!-- ==================== CART DRAWER ==================== -->
+<div id="cartOverlay" class="overlay" onclick="toggleCartDrawer()"></div>
+<div id="cartDrawer" class="drawer">
+    <div class="drawer-header"><h3><i class="fa-solid fa-cart-shopping"></i> Shopping Cart</h3><button onclick="toggleCartDrawer()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div id="cartItemsContainer" class="drawer-body"></div>
+    <div class="drawer-footer">
+        <div class="subtotal-row"><span>Subtotal</span><strong id="cartDrawerSubtotal">Rs. 0</strong></div>
+        <button class="checkout-btn" onclick="proceedToCheckout()"><i class="fa-solid fa-lock"></i> Proceed to Checkout</button>
+    </div>
+</div>
+
+<!-- ==================== FAQ MODAL ==================== -->
+<div id="faqOverlay" class="modal-overlay" onclick="closeFaq(event)">
+    <div class="modal-content faq-modal" onclick="event.stopPropagation()">
+        <div class="modal-header gradient-header"><div><span class="eyebrow">Help Center</span><h2>Frequently Asked Questions</h2></div><button class="modal-close" onclick="closeFaq()"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="modal-body">
+            <details class="faq-item"><summary>How do I make a purchase?</summary><p>Select any product, view details, click "Buy Now" or add items to your cart, proceed to checkout, fill out your delivery info, select payment method, and place your order.</p></details>
+            <details class="faq-item"><summary>How do I add items to the cart?</summary><p>Click the "Add to Cart" button on any product card or in the product detail view. Your cart icon will update with the item count.</p></details>
+            <details class="faq-item"><summary>Where can I view my cart?</summary><p>Click the cart icon in the top-right header to open the sliding cart drawer where you can view, update quantities, or remove items.</p></details>
+            <details class="faq-item"><summary>How do I search for products?</summary><p>Use the search bar in the header to search by product name, category, or brand. You can also browse by clicking category tabs below the header.</p></details>
+            <details class="faq-item"><summary>What payment methods are accepted?</summary><p>We accept Cash on Delivery (COD), eSewa/Khalti digital wallets, and Credit/Debit Card payments.</p></details>
+            <details class="faq-item"><summary>How do I return a product?</summary><p>You can return products within 7 days of delivery. Contact our support team at support@everestmart.com to initiate a return.</p></details>
+            <details class="faq-item"><summary>Is my payment information secure?</summary><p>Yes, all payment transactions are encrypted and securely processed. We never store your full card details on our servers.</p></details>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== TERMS & CONDITIONS MODAL ==================== -->
+<div id="termsOverlay" class="modal-overlay" onclick="closeTerms(event)">
+    <div class="modal-content terms-modal" onclick="event.stopPropagation()">
+        <div class="modal-header gradient-header"><div><span class="eyebrow">Legal</span><h2>Terms &amp; Conditions</h2></div><button class="modal-close" onclick="closeTerms()"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="modal-body terms-body">
+            <h3>1. Introduction</h3>
+            <p>Welcome to Everest Mart. By accessing or using our website and services, you agree to be bound by these Terms and Conditions. Please read them carefully before using our platform.</p>
+            <h3>2. Account Registration</h3>
+            <p>To access certain features, you must create an account. You agree to provide accurate, current, and complete information during registration. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.</p>
+            <h3>3. Products and Pricing</h3>
+            <p>All product descriptions, images, and prices are as displayed on the website. We reserve the right to modify prices without prior notice. In case of a pricing error, we reserve the right to cancel any orders placed at the incorrect price.</p>
+            <h3>4. Orders and Payment</h3>
+            <p>Placing an order constitutes an offer to purchase. We reserve the right to accept or decline any order. Payment must be completed through one of our accepted payment methods before order processing begins.</p>
+            <h3>5. Shipping and Delivery</h3>
+            <p>We aim to deliver orders within the estimated delivery timeframe. However, delivery dates are not guaranteed. Free shipping is available on orders over Rs. 2000 within Nepal.</p>
+            <h3>6. Returns and Refunds</h3>
+            <p>Products may be returned within 7 days of delivery, provided they are in original condition. Refunds will be processed to the original payment method within 5-7 business days after we receive the returned item.</p>
+            <h3>7. Privacy Policy</h3>
+            <p>Your personal data is handled in accordance with our Privacy Policy. We use cookies to enhance your browsing experience and do not sell your personal information to third parties.</p>
+            <h3>8. Limitation of Liability</h3>
+            <p>Everest Mart shall not be liable for any indirect, incidental, or consequential damages arising from the use of our products or services. Our total liability shall not exceed the amount paid for the product in question.</p>
+            <h3>9. Cookies</h3>
+            <p>We use cookies and similar technologies to improve your experience on our website. By using our site, you consent to the use of cookies as described in our Cookie Policy.</p>
+            <h3>10. Changes to Terms</h3>
+            <p>We reserve the right to update these Terms and Conditions at any time. Changes will be effective immediately upon posting on the website. Continued use of the site after changes constitutes acceptance of the revised terms.</p>
+            <p class="terms-contact">For questions about these terms, contact us at <strong>support@everestmart.com</strong></p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== PRODUCT QUICK VIEW MODAL ==================== -->
+<div id="productModal" class="modal-overlay" onclick="closeProductModal(event)">
+    <div class="modal-content product-modal" onclick="event.stopPropagation()">
+        <div class="modal-header gradient-header"><div><span class="eyebrow">Product Details</span><h2 id="pmTitle">Product</h2></div><button class="modal-close" onclick="closeProductModal()"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="modal-body" id="productModalBody"></div>
+    </div>
+</div>
+
+<!-- ==================== SCROLL TO TOP ==================== -->
+<button id="scrollTopBtn" class="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
+
+<!-- ==================== TOAST ==================== -->
+<div id="toast" class="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

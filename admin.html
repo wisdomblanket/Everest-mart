@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Everest Mart - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div id="adminLogin" class="admin-login">
+        <div class="login-card">
+            <div class="login-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <h1>Admin Panel</h1>
+            <p>Everest Mart Administration</p>
+            <form id="adminLoginForm">
+                <div class="input-field"><i class="fa-solid fa-envelope"></i><input type="email" id="adminEmail" placeholder="Admin email" required></div>
+                <div class="input-field"><i class="fa-solid fa-lock"></i><input type="password" id="adminPassword" placeholder="Password" required></div>
+                <div id="adminError" class="error-msg"></div>
+                <button type="submit" class="login-btn">Sign In as Admin</button>
+            </form>
+            <a href="everest.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Store</a>
+        </div>
+    </div>
+
+    <div id="adminDashboard" class="admin-dashboard hidden">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><i class="fa-solid fa-mountain"></i><span>Everest Mart</span></div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview"><i class="fa-solid fa-gauge-high"></i> Overview</a>
+                <a href="#" class="nav-item" data-section="users"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="#" class="nav-item" data-section="orders"><i class="fa-solid fa-box"></i> Orders</a>
+                <a href="#" class="nav-item" data-section="products"><i class="fa-solid fa-fire"></i> Popular Products</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="everest.html"><i class="fa-solid fa-store"></i> View Store</a>
+                <a href="#" id="adminLogout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+        <main class="admin-main">
+            <div class="admin-header"><h1 id="sectionTitle">Dashboard Overview</h1><span id="adminGreeting"></span></div>
+
+            <div id="overviewSection" class="section-content">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon users"><i class="fa-solid fa-users"></i></div><div class="stat-info"><span class="stat-value" id="totalUsers">0</span><span class="stat-label">Total Users</span></div></div>
+                    <div class="stat-card"><div class="stat-icon orders"><i class="fa-solid fa-box-open"></i></div><div class="stat-info"><span class="stat-value" id="totalOrders">0</span><span class="stat-label">Total Orders</span></div></div>
+                    <div class="stat-card"><div class="stat-icon revenue"><i class="fa-solid fa-dollar-sign"></i></div><div class="stat-info"><span class="stat-value" id="totalRevenue">Rs. 0</span><span class="stat-label">Total Revenue</span></div></div>
+                    <div class="stat-card"><div class="stat-icon top-prod"><i class="fa-solid fa-fire"></i></div><div class="stat-info"><span class="stat-value small" id="topProduct">N/A</span><span class="stat-label">Most Popular Product</span></div></div>
+                </div>
+                <div class="panel"><h3><i class="fa-solid fa-fire"></i> Top Selling Products</h3><div id="popularProductsList"></div></div>
+            </div>
+
+            <div id="usersSection" class="section-content hidden">
+                <div class="panel"><h3><i class="fa-solid fa-users"></i> Registered Users</h3>
+                    <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Logins</th><th>Last Login</th><th>Joined</th></tr></thead><tbody id="usersTableBody"><tr><td colspan="6" class="empty">No users found</td></tr></tbody></table></div>
+                </div>
+            </div>
+
+            <div id="ordersSection" class="section-content hidden">
+                <div class="panel"><h3><i class="fa-solid fa-box"></i> All Orders</h3>
+                    <div class="table-wrapper"><table><thead><tr><th>Customer</th><th>Phone</th><th>Items Bought</th><th>Total</th><th>Payment</th><th>Date</th></tr></thead><tbody id="ordersTableBody"><tr><td colspan="6" class="empty">No orders found</td></tr></tbody></table></div>
+                </div>
+            </div>
+
+            <div id="productsSection" class="section-content hidden">
+                <div class="panel"><h3><i class="fa-solid fa-chart-bar"></i> Product Performance</h3><div id="productPerformance"></div></div>
+            </div>
+        </main>
+    </div>
+    <script src="admin.js"></script>
+</body>
+</html>

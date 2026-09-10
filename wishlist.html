@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist - Everest Mart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<header class="page-header">
+    <div class="page-header-inner">
+        <div class="header-left">
+            <button class="back-nav-btn" onclick="history.back()" title="Go back"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="logo" onclick="location.href='everest.html'"><div class="logo-icon"><i class="fa-solid fa-mountain"></i></div><span>Everest<span class="logo-accent">Mart</span></span></div>
+        </div>
+        <a href="everest.html" class="page-back-link"><i class="fa-solid fa-arrow-left"></i> Back to Store</a>
+    </div>
+</header>
+
+<!-- ==================== WISHLIST MAIN ==================== -->
+<main class="page-main">
+    <div class="page-head-row">
+        <div>
+            <h1 class="page-title animate-in"><i class="fa-solid fa-heart"></i> My Wishlist</h1>
+            <p class="page-subtitle" id="wishlistItemCount">0 items</p>
+        </div>
+        <div class="page-stats">
+            <span class="page-stat"><i class="fa-solid fa-heart"></i> <b id="pageWishCount">0</b> Items</span>
+            <span class="page-stat" onclick="location.href='everest.html'"><i class="fa-solid fa-cart-shopping"></i> <b id="pageCartCount">0</b> in Cart</span>
+        </div>
+    </div>
+    <div class="wishlist-grid" id="wishlistGrid"></div>
+</main>
+
+<!-- ==================== TOAST ==================== -->
+<div id="toast" class="toast"></div>
+
+<script src="wishlist.js"></script>
+</body>
+</html>
