@@ -129,11 +129,9 @@ body{font-family:"Poppins",sans-serif;background:var(--bg);color:var(--ink);over
 .success-msg.show{max-height:60px;margin-bottom:8px}
 .auth-divider{display:flex;align-items:center;gap:16px;margin:24px 0;color:var(--muted);font-size:13px}
 .auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:var(--line)}
-.submit-btn{width:100%;background:linear-gradient(135deg,var(--brand),var(--brand-dark));color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden}
-.submit-btn::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,var(--brand-dark),var(--ink));opacity:0;transition:opacity .25s}
-.submit-btn:hover::before{opacity:1}
-.submit-btn:hover{box-shadow:0 8px 25px rgba(230,126,34,.4);transform:translateY(-2px)}
-.submit-btn:active{transform:translateY(0) scale(.98)}
+.submit-btn{width:100%;background:linear-gradient(135deg,var(--brand),var(--brand-dark));color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px}
+.submit-btn:hover:not(:disabled){box-shadow:0 8px 25px rgba(230,126,34,.4);transform:scale(1.02)}
+.submit-btn:active:not(:disabled){transform:scale(.98)}
 .submit-btn:disabled{opacity:.7;cursor:not-allowed;transform:none}
 .submit-btn .btn-loader{display:flex;align-items:center;justify-content:center}
 .auth-footer{text-align:center;margin-top:24px;font-size:14px;color:var(--muted)}
@@ -184,9 +182,7 @@ input[type="checkbox"]:checked+.toggle-switch::after{transform:translateX(18px)}
 .auth-btn{flex:1;padding:13px;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);background:var(--cream);border:1px solid var(--line);transition:all .2s}
 .auth-btn.active{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:0 4px 12px rgba(230,126,34,.25)}
 .auth-btn:hover:not(.active){background:var(--brand-light);color:var(--brand-dark);border-color:var(--brand)}
-.submit-btn{width:100%;background:var(--brand-dark);color:#fff;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;margin-bottom:16px}
-.submit-btn:hover{background:var(--ink);box-shadow:0 4px 15px rgba(44,24,16,.25)}
-.submit-btn:active{transform:scale(.98)}
+
 .switch-text{font-size:13px;color:var(--muted)}
 .switch-text a{color:var(--brand);font-weight:600}
 
