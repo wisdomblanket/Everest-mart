@@ -45,7 +45,7 @@
             <div class="header-actions">
                 <div class="action-item" onclick="toggleWishlistView()"><i class="fa-regular fa-heart icon"></i><span id="wishlistCount" class="badge">0</span><span class="label">Wishlist</span></div>
                 <div class="action-item" onclick="toggleCartDrawer()"><i class="fa-solid fa-cart-shopping icon"></i><span id="cartCount" class="badge">0</span><span class="label">Cart</span></div>
-                <div class="action-item"><i class="fa-solid fa-user icon"></i><span class="label" id="greetingShort">Account</span></div>
+                <div class="action-item" onclick="openAccountModal()"><i class="fa-solid fa-user icon"></i><span class="label" id="greetingShort">Account</span></div>
             </div>
         </div>
         <div class="tagline-bar">
@@ -184,6 +184,25 @@
     <div class="modal-content product-modal" onclick="event.stopPropagation()">
         <div class="modal-header gradient-header"><div><span class="eyebrow">Product Details</span><h2 id="pmTitle">Product</h2></div><button class="modal-close" onclick="closeProductModal()"><i class="fa-solid fa-xmark"></i></button></div>
         <div class="modal-body" id="productModalBody"></div>
+    </div>
+</div>
+
+<!-- ==================== MY ACCOUNT MODAL ==================== -->
+<div id="accountModal" class="modal-overlay" onclick="closeAccountModal(event)">
+    <div class="modal-content account-modal" onclick="event.stopPropagation()">
+        <div class="modal-header gradient-header"><div><span class="eyebrow">My Account</span><h2 id="accountName">Account</h2></div><button class="modal-close" onclick="closeAccountModal()"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="modal-body">
+            <p class="account-email"><i class="fa-solid fa-envelope"></i> <span id="accountEmail"></span></p>
+            <h4 class="account-section-title"><i class="fa-solid fa-user-pen"></i> Change Username</h4>
+            <div class="input-field"><i class="fa-solid fa-user"></i><input type="text" id="accountNameInput" placeholder="Enter new username" maxlength="60"></div>
+            <button class="btn-primary btn-full account-save-btn" onclick="saveAccountName()"><i class="fa-solid fa-check"></i> Save Username</button>
+            <h4 class="account-section-title"><i class="fa-solid fa-key"></i> Change Password</h4>
+            <div class="input-field account-input"><i class="fa-solid fa-lock"></i><input type="password" id="accountCurrentPw" placeholder="Current password" autocomplete="current-password"><button type="button" class="password-toggle" onclick="togglePassword('accountCurrentPw', this)" aria-label="Toggle password visibility"><i class="fa-regular fa-eye"></i></button></div>
+            <div class="input-field account-input"><i class="fa-solid fa-lock"></i><input type="password" id="accountNewPw" placeholder="New password (min 8 chars)" autocomplete="new-password"><button type="button" class="password-toggle" onclick="togglePassword('accountNewPw', this)" aria-label="Toggle password visibility"><i class="fa-regular fa-eye"></i></button></div>
+            <div class="input-field account-input"><i class="fa-solid fa-lock"></i><input type="password" id="accountConfirmPw" placeholder="Confirm new password" autocomplete="new-password"><button type="button" class="password-toggle" onclick="togglePassword('accountConfirmPw', this)" aria-label="Toggle password visibility"><i class="fa-regular fa-eye"></i></button></div>
+            <button class="btn-primary btn-full account-save-btn" onclick="saveAccountPassword()"><i class="fa-solid fa-check"></i> Update Password</button>
+            <div id="accountMsg" class="account-msg" role="status"></div>
+        </div>
     </div>
 </div>
 

@@ -7,8 +7,9 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
   loginCount: { type: Number, default: 0 },
   lastLogin: { type: Date },
-  resetPasswordToken: { type: String },
-  resetPasswordExpires: { type: Date }
+  passwordRequestPending: { type: Boolean, default: false },
+  passwordRequestedAt: { type: Date },
+  adminResetNotice: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

@@ -2,6 +2,11 @@ const API = '';
 let stateProducts = [];
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (!localStorage.getItem('em_user')) {
+        sessionStorage.setItem('em_next', 'wishlist.html');
+        window.location.href = 'login.html';
+        return;
+    }
     updateCounts();
     loadWishlist();
 });

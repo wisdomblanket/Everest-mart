@@ -39,6 +39,18 @@ body{font-family:"Poppins",sans-serif;background:var(--bg);color:var(--ink);over
 .product-grid .card-img img{opacity:0;transition:transform .4s ease,opacity .5s ease}
 .product-grid .card-img img.loaded{opacity:1}
 
+/* ==================== MY ACCOUNT MODAL ==================== */
+.account-modal{max-width:480px}
+.account-email{font-size:13px;color:var(--muted);margin:4px 0 18px;display:flex;align-items:center;gap:8px}
+.account-email i{color:var(--brand)}
+.account-section-title{font-size:14px;font-weight:700;margin:18px 0 10px;display:flex;align-items:center;gap:8px;color:var(--ink)}
+.account-section-title i{color:var(--brand)}
+.account-input{margin-bottom:10px}
+.account-save-btn{margin-top:6px}
+.account-msg{font-size:13px;font-weight:500;margin-top:14px;min-height:20px}
+.account-msg.error{color:var(--danger)}
+.account-msg.success{color:var(--success)}
+
 @media (prefers-reduced-motion:reduce){
     html{scroll-behavior:auto}
     *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}

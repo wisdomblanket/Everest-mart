@@ -82,9 +82,16 @@ async function loadUsers() {
     try {
         const res = await fetch(`${API}/api/admin/users`);
         const users = await res.json();
+        const pending = users.filter(u => u.passwordRequestPending);
+        const alertBox = document.getElementById('resetAlert');
+        if (alertBox) {
+            alertBox.innerHTML = pending.length
+                ? `<div class="reset-banner"><i class="fa-solid fa-bell"></i><span><strong>${pending.length}</strong> password reset request${pending.length === 1 ? '' : 's'} pending: ${pending.map(u => escapeHtml(u.email)).join(', ')}</span></div>`
+                : '';
+        }
         document.getElementById('usersTableBody').innerHTML = users.length ? users.map(u => `
-            <tr>
-                <td><span class="uname" id="uname-${u._id}"><strong>${escapeHtml(u.name)}</strong></span></td>
+            <tr${u.passwordRequestPending ? ' class="row-pending"' : ''}>
+                <td><span class="uname" id="uname-${u._id}"><strong>${escapeHtml(u.name)}</strong></span>${u.passwordRequestPending ? ' <span class="badge reset">Reset requested</span>' : ''}</td>
                 <td>${escapeHtml(u.email)}</td>
                 <td><span class="badge ${u.role === 'admin' ? 'admin' : 'user'}">${u.role}</span></td>
                 <td>${u.loginCount || 0}</td>

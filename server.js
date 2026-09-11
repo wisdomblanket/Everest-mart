@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const path = require('path');
-const crypto = require('crypto');
 
 const User = require('./User');
 const Product = require('./Product');
@@ -18,26 +17,7 @@ app.use(express.static(__dirname));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'everest.html')));
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'favicon.svg')));
 
-/* Lazy mailer: works only if SMTP env vars are set AND nodemailer is installed.
-   Otherwise password-reset links are logged to the server console. */
-let cachedMailer = null;
-function getMailer() {
-  if (cachedMailer) return cachedMailer;
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
-  try {
-    const nodemailer = require('nodemailer');
-    cachedMailer = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: String(process.env.SMTP_SECURE).toLowerCase() === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-    });
-    return cachedMailer;
-  } catch (e) {
-    console.error('Mailer unavailable:', e.message);
-    return null;
-  }
-}
+
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB Connected'))
@@ -64,9 +44,14 @@ app.post('/api/signin', async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: 'Email not registered.' });
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ error: 'Incorrect password.' });
+    if (!isMatch) {
+      const resp = { error: 'Incorrect password.' };
+      if (user.adminResetNotice) resp.notice = user.adminResetNotice;
+      return res.status(400).json(resp);
+    }
     user.loginCount = (user.loginCount || 0) + 1;
     user.lastLogin = new Date();
+    user.adminResetNotice = undefined;
     await user.save();
     res.json({ message: 'Signed in successfully', name: user.name, role: user.role });
   } catch (err) {
@@ -94,45 +79,12 @@ app.post('/api/forgot-password', async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email required.' });
     const user = await User.findOne({ email: String(email).toLowerCase() });
-    if (user) {
-      const token = crypto.randomBytes(32).toString('hex');
-      user.resetPasswordToken = token;
-      user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
+    if (user && !user.passwordRequestPending) {
+      user.passwordRequestPending = true;
+      user.passwordRequestedAt = new Date();
       await user.save();
-      const resetLink = `${req.protocol}://${req.get('host')}/reset-password.html?token=${token}`;
-      const mailer = getMailer();
-      if (mailer) {
-        try {
-          await mailer.sendMail({
-            from: process.env.SMTP_FROM || process.env.SMTP_USER,
-            to: user.email,
-            subject: 'Everest Mart password reset',
-            text: `You requested a password reset. Use this link within 1 hour:\n\n${resetLink}\n\nIf you did not request this, ignore this email.`
-          });
-        } catch (e) { console.error('Reset email failed:', e.message); }
-      } else {
-        console.log(`Password reset link for ${user.email}: ${resetLink}`);
-      }
     }
-    res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
-  } catch (err) {
-    res.status(500).json({ error: 'Server error. Please try again.' });
-  }
-});
-
-app.post('/api/reset-password', async (req, res) => {
-  try {
-    const { token, password } = req.body;
-    if (!token || !password || password.length < 8) {
-      return res.status(400).json({ error: 'Invalid request. Password must be at least 8 characters.' });
-    }
-    const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: new Date() } });
-    if (!user) return res.status(400).json({ error: 'This reset link is invalid or has expired. Please request a new one.' });
-    user.password = await bcrypt.hash(password, 10);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
-    res.json({ message: 'Password reset successfully.' });
+    res.json({ message: 'Please be patient, you will be notified about your new password.' });
   } catch (err) {
     res.status(500).json({ error: 'Server error. Please try again.' });
   }
@@ -227,8 +179,8 @@ app.post('/api/admin/users/:id/reset-password', async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found.' });
     user.password = await bcrypt.hash(password, 10);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
+    user.passwordRequestPending = false;
+    user.adminResetNotice = 'Your password was reset by the administrator on ' + new Date().toLocaleDateString() + '. Please sign in with the new password provided to you.';
     await user.save();
     res.json({ message: 'Password updated successfully.' });
   } catch (err) {
@@ -245,6 +197,40 @@ app.put('/api/admin/orders/:id', async (req, res) => {
     res.json(order);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update order.' });
+  }
+});
+
+app.put('/api/account', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    if (!email || !name || !String(name).trim()) return res.status(400).json({ error: 'Valid email and name are required.' });
+    const user = await User.findOneAndUpdate(
+      { email: String(email).toLowerCase() },
+      { name: String(name).trim() },
+      { new: true }
+    ).select('-password');
+    if (!user) return res.status(404).json({ error: 'Account not found.' });
+    res.json({ name: user.name, email: user.email });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update profile.' });
+  }
+});
+
+app.post('/api/account/password', async (req, res) => {
+  try {
+    const { email, currentPassword, newPassword } = req.body;
+    if (!email || !currentPassword || !newPassword || newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters.' });
+    }
+    const user = await User.findOne({ email: String(email).toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'Account not found.' });
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) return res.status(400).json({ error: 'Current password is incorrect.' });
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.json({ message: 'Password changed successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to change password.' });
   }
 });
 

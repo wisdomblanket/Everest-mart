@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('loginForm')) initLoginPage();
     else if (document.getElementById('registerForm')) initRegisterPage();
     else if (document.getElementById('forgotForm')) initForgotPage();
-    else if (document.getElementById('resetForm')) initResetPage();
     else if (document.getElementById('productGrid')) initShopPage();
 });
 
@@ -35,6 +34,11 @@ function initReveal() {
 }
 
 function initShopPage() {
+    if (!localStorage.getItem('em_user')) {
+        sessionStorage.setItem('em_next', 'everest.html');
+        window.location.href = 'login.html';
+        return;
+    }
     initCategories();
     loadProducts();
     updateCartUI();
@@ -55,7 +59,7 @@ function initShopPage() {
     const logoutLink = document.getElementById('logoutLink');
     if (logoutLink) logoutLink.addEventListener('click', e => { e.preventDefault(); logout(); });
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') { closeFaq(); closeTerms(); closeProductModal(); }
+        if (e.key === 'Escape') { closeFaq(); closeTerms(); closeProductModal(); closeAccountModal(); }
     });
 }
 
@@ -107,7 +111,7 @@ function showSuccess(msg) {
 
 /* ---------- LOGIN PAGE ---------- */
 function initLoginPage() {
-    if (localStorage.getItem('em_user')) { window.location.href = 'everest.html'; return; }
+    if (localStorage.getItem('em_user')) { window.location.href = sessionStorage.getItem('em_next') || 'everest.html'; return; }
     const remembered = localStorage.getItem('em_remember');
     if (remembered) {
         try {
@@ -138,7 +142,10 @@ async function handleLogin() {
             body: JSON.stringify({ email, password })
         });
         const data = await res.json();
-        if (!res.ok) { showError(data.error || 'Sign in failed.'); return; }
+        if (!res.ok) {
+            showError(data.notice ? data.error + ' ' + data.notice : (data.error || 'Sign in failed.'));
+            return;
+        }
 
         if (remember) localStorage.setItem('em_remember', JSON.stringify({ email, password }));
         else localStorage.removeItem('em_remember');
@@ -146,7 +153,9 @@ async function handleLogin() {
         state.user = { name: data.name, email };
         localStorage.setItem('em_user', JSON.stringify(state.user));
         sessionStorage.setItem('em_fresh', '1');
-        window.location.href = 'everest.html';
+        const nextPage = sessionStorage.getItem('em_next');
+        sessionStorage.removeItem('em_next');
+        window.location.href = nextPage || 'everest.html';
     } catch (err) {
         showError('Unable to connect to server. Please check your connection and try again.');
     } finally {
@@ -156,7 +165,7 @@ async function handleLogin() {
 
 /* ---------- REGISTER PAGE ---------- */
 function initRegisterPage() {
-    if (localStorage.getItem('em_user')) { window.location.href = 'everest.html'; return; }
+    if (localStorage.getItem('em_user')) { window.location.href = sessionStorage.getItem('em_next') || 'everest.html'; return; }
     const pwInput = document.getElementById('passwordInput');
     if (pwInput) pwInput.addEventListener('input', () => updateStrengthMeter(pwInput.value));
     document.getElementById('registerForm').addEventListener('submit', e => { e.preventDefault(); handleRegister(); });
@@ -213,7 +222,9 @@ async function handleRegister() {
         state.user = { name: data.name, email };
         localStorage.setItem('em_user', JSON.stringify(state.user));
         sessionStorage.setItem('em_fresh', '1');
-        window.location.href = 'everest.html';
+        const nextPage = sessionStorage.getItem('em_next');
+        sessionStorage.removeItem('em_next');
+        window.location.href = nextPage || 'everest.html';
     } catch (err) {
         showError('Unable to connect to server. Please check your connection and try again.');
     } finally {
@@ -250,43 +261,7 @@ async function handleForgot() {
     }
 }
 
-/* ---------- RESET PASSWORD PAGE ---------- */
-function initResetPage() {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (!token) {
-        showError('This reset link is invalid. Please request a new one.');
-        document.getElementById('submitBtn').disabled = true;
-        return;
-    }
-    document.getElementById('resetForm').addEventListener('submit', e => { e.preventDefault(); handleReset(token); });
-}
 
-async function handleReset(token) {
-    const password = document.getElementById('passwordInput').value;
-    const confirm = document.getElementById('confirmPasswordInput').value;
-    clearError();
-    if (!password || password.length < 8) return showError('Password must be at least 8 characters long.');
-    if (password !== confirm) return showError('Passwords do not match.');
-
-    const submitBtn = document.getElementById('submitBtn');
-    setLoading(submitBtn, true);
-    try {
-        const res = await fetch(API + '/api/reset-password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, password })
-        });
-        const data = await res.json();
-        if (!res.ok) { showError(data.error || 'Reset failed. Please try again.'); return; }
-        showSuccess(data.message + ' Redirecting to sign in...');
-        setTimeout(() => { window.location.href = 'login.html'; }, 2000);
-    } catch (err) {
-        showError('Unable to connect to server. Please check your connection and try again.');
-    } finally {
-        setLoading(submitBtn, false);
-    }
-}
 
 async function restoreSession(savedUser) {
     let cached = null;
@@ -316,7 +291,8 @@ async function restoreSession(savedUser) {
             localStorage.setItem('em_user', JSON.stringify(state.user));
         } else {
             localStorage.removeItem('em_user');
-            showShop();
+            sessionStorage.setItem('em_next', 'everest.html');
+            window.location.href = 'login.html';
             return;
         }
     } catch (err) {
@@ -349,6 +325,77 @@ function logout() {
     localStorage.removeItem('em_remember');
     showToast('Logged out successfully');
     setTimeout(() => { window.location.href = 'login.html'; }, 600);
+}
+
+/* ==================== MY ACCOUNT ==================== */
+function openAccountModal() {
+    if (!state.user) { window.location.href = 'login.html'; return; }
+    document.getElementById('accountName').textContent = state.user.name;
+    document.getElementById('accountEmail').textContent = state.user.email;
+    document.getElementById('accountNameInput').value = state.user.name;
+    const msg = document.getElementById('accountMsg');
+    if (msg) { msg.textContent = ''; msg.className = 'account-msg'; }
+    document.getElementById('accountModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAccountModal(e) {
+    if (e && e.target !== e.currentTarget) return;
+    const m = document.getElementById('accountModal');
+    if (!m) return;
+    m.classList.remove('show');
+    if (!cartOpen()) document.body.style.overflow = '';
+}
+
+async function saveAccountName() {
+    const msg = document.getElementById('accountMsg');
+    const input = document.getElementById('accountNameInput');
+    const name = input ? input.value.trim() : '';
+    if (!state.user) { window.location.href = 'login.html'; return; }
+    if (!name) { if (msg) { msg.textContent = 'Username cannot be empty.'; msg.className = 'account-msg error'; } return; }
+    try {
+        const res = await fetch(API + '/api/account', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: state.user.email, name })
+        });
+        const data = await res.json();
+        if (!res.ok) { if (msg) { msg.textContent = data.error || 'Update failed.'; msg.className = 'account-msg error'; } return; }
+        state.user.name = data.name;
+        localStorage.setItem('em_user', JSON.stringify(state.user));
+        document.getElementById('accountName').textContent = data.name;
+        showShop();
+        if (msg) { msg.textContent = 'Username updated successfully.'; msg.className = 'account-msg success'; }
+        showToast('Username updated');
+    } catch (err) { if (msg) { msg.textContent = 'Unable to connect to server.'; msg.className = 'account-msg error'; } }
+}
+
+async function saveAccountPassword() {
+    const msg = document.getElementById('accountMsg');
+    const current = document.getElementById('accountCurrentPw');
+    const next = document.getElementById('accountNewPw');
+    const confirm = document.getElementById('accountConfirmPw');
+    if (!state.user) { window.location.href = 'login.html'; return; }
+    const currentPassword = current ? current.value : '';
+    const newPassword = next ? next.value : '';
+    const confirmPassword = confirm ? confirm.value : '';
+    if (!currentPassword) { if (msg) { msg.textContent = 'Please enter your current password.'; msg.className = 'account-msg error'; } return; }
+    if (!newPassword || newPassword.length < 8) { if (msg) { msg.textContent = 'New password must be at least 8 characters.'; msg.className = 'account-msg error'; } return; }
+    if (newPassword !== confirmPassword) { if (msg) { msg.textContent = 'New passwords do not match.'; msg.className = 'account-msg error'; } return; }
+    try {
+        const res = await fetch(API + '/api/account/password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: state.user.email, currentPassword, newPassword })
+        });
+        const data = await res.json();
+        if (!res.ok) { if (msg) { msg.textContent = data.error || 'Update failed.'; msg.className = 'account-msg error'; } return; }
+        if (current) current.value = '';
+        if (next) next.value = '';
+        if (confirm) confirm.value = '';
+        if (msg) { msg.textContent = 'Password changed successfully.'; msg.className = 'account-msg success'; }
+        showToast('Password changed');
+    } catch (err) { if (msg) { msg.textContent = 'Unable to connect to server.'; msg.className = 'account-msg error'; } }
 }
 
 /* ==================== PRODUCTS ==================== */

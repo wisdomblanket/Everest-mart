@@ -3,6 +3,11 @@ let checkoutItems = [];
 let checkoutTotal = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (!localStorage.getItem('em_user')) {
+        sessionStorage.setItem('em_next', 'checkout.html');
+        window.location.href = 'login.html';
+        return;
+    }
     try { checkoutItems = JSON.parse(localStorage.getItem('em_checkout') || '[]'); } catch (e) { checkoutItems = []; }
 
     if (checkoutItems.length === 0) {
